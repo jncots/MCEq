@@ -7,6 +7,7 @@ name: Testing_python_app
 # see https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
 on: 
   workflow_dispatch:
+  
 
 # on: 
 #   push:
