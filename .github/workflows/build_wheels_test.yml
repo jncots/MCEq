@@ -5,10 +5,19 @@ name: Testing_python_app
 
 # Run manually, 
 # see https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
-on: 
-  push:
-    branches:
-      - to_github_actions
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifactName:
+        description: 'Name of artifact to save'
+        required: true
+        default: 'artifact'
+      
+# on: 
+#   push:
+#     branches:
+#       - to_github_actions
   
 
 # on: 
@@ -32,6 +41,7 @@ jobs:
 
         - uses: actions/upload-artifact@v3
           with:
+            name: ${{ github.event.inputs.artifactName }}
             path: dist/*.tar.gz
 
 #   build:
