@@ -73,7 +73,7 @@ jobs:
           CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64"
           # Run the package tests using `pytest`
           CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: pytest {package}/tests
+          CIBW_TEST_COMMAND: pytest {package}/MCEq/tests
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
