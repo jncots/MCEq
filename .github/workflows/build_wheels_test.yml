@@ -45,7 +45,7 @@ jobs:
 
         - uses: actions/upload-artifact@v3
           with:
-            name: ${{ github.event.inputs.artifactName }}
+            name: ${{ github.event.inputs.artifactNameSDist }}
             path: dist/*.tar.gz
             
     build_wheels:
