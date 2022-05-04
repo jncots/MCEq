@@ -61,14 +61,27 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+        
+        # Building non-native architectures using emulation
+        # https://cibuildwheel.readthedocs.io/en/stable/faq/
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
 
 
          
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.5.0
         env:
+          # Skip 32-bit builds
+          # Disable building PyPy wheels on all platforms
+          CIBW_SKIP: "*-win32 *linux_i686 pp*"
           # Build `universal2` wheels on an Intel runner.
           CIBW_ARCHS_MACOS: x86_64 universal2
+          # On an Linux Intel runner with qemu installed, build Intel and ARM wheels
+          CIBW_ARCHS_LINUX: "auto aarch64"
           # Skip trying to test arm64 builds on Intel Macs
           CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64"
           # Run the package tests using `pytest`
