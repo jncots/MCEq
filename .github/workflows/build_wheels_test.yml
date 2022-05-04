@@ -9,10 +9,14 @@ name: Testing_python_app
 on:
   workflow_dispatch:
     inputs:
-      artifactName:
-        description: 'Name of artifact to save'
+      artifactNameSDist:
+        description: 'Name of artifact for SDist'
         required: true
-        default: 'artifact'
+        default: 'SDist'
+      artifactNameWheels:
+        description: 'Prefix for artifacts for wheels'
+        required: true
+        default: 'wheels'
       
 # on: 
 #   push:
@@ -58,11 +62,23 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - uses: pypa/cibuildwheel@v2.4.0
+
+         
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.5.0
+        env:
+          # Build `universal2` wheels on an Intel runner.
+          CIBW_ARCHS_MACOS: x86_64 universal2
+          # Skip trying to test arm64 builds on Intel Macs
+          CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64"
+          # Run the package tests using `pytest`
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: pytest {package}/tests
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
+          name: ${{ github.event.inputs.artifactNameWheels }}_for_${{ matrix.os }}
           path: wheelhouse/*.whl
 
 #   build:
