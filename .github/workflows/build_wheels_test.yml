@@ -18,17 +18,6 @@ on:
         required: true
         default: 'wheels'
       
-# on: 
-#   push:
-#     branches:
-#       - to_github_actions
-  
-
-# on: 
-#   push:
-#     branches:
-#       - to_github_actions
-
 
 jobs:
     make_sdist:
@@ -83,7 +72,8 @@ jobs:
           # On an Linux Intel runner with qemu installed, build Intel and ARM wheels
           CIBW_ARCHS_LINUX: "auto aarch64"
           # Skip trying to test arm64 builds on Intel Macs
-          CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64"
+          # Will avoid testing on emulated architectures
+          CIBW_TEST_SKIP: "*-macosx_arm64 *-macosx_universal2:arm64 *-*linux_{aarch64,ppc64le,s390x}"
           # Run the package tests using `pytest`
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {package}/MCEq/tests
@@ -94,37 +84,38 @@ jobs:
           name: ${{ github.event.inputs.artifactNameWheels }}_for_${{ matrix.os }}
           path: wheelhouse/*.whl
 
-#   build:
+    upload_all_testPYPI:
+      name: Upload to TestPyPI
+      needs: [build_wheels, make_sdist]
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download artifacts for SDist
+          uses: actions/download-artifact@v3
+          with:
+            name: SDist
+            path: dist
 
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         python-version: ["3.8", "3.9", "3.10"]
+        - name: Download artifacts for MacOS
+          uses: actions/download-artifact@v3
+          with:
+            name: wheels_for_macos-10.15
+            path: dist
 
-#     steps:
-#     - name: Copy github files
-#       uses: actions/checkout@v3
-    
-#     - name: Set up Python ${{ matrix.python-version }}
-#       uses: actions/setup-python@v3
-#       with:
-#         python-version: ${{ matrix.python-version }}
-        
-#     - name: Install dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         python -m pip install pytest
-#         python -m pip install MCEq
-#         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-#         ls -la
-#         python --version
-#         python -m pip --version
-        
+        - name: Download artifacts for Windows
+          uses: actions/download-artifact@v3
+          with:
+            name: wheels_for_windows-2019
+            path: dist 
 
+        - name: Download artifacts for Linux
+          uses: actions/download-artifact@v3
+          with:
+            name: wheels_for_ubuntu-20.04
+            path: dist       
 
-#     - name: Test MCEq with pytest
-#       run: |
-#         cd ./MCEq_tests
-#         echo $(pwd)
-#         pytest
+        - name: Publish package to TestPyPI
+          uses: pypa/gh-action-pypi-publish@v1.5.0
+          with:
+            user: __token__
+            repository_url: https://test.pypi.org/legacy/
+            password: ${{ secrets.TEST_PYPI_API_TOKEN }}
