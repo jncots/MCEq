@@ -60,7 +60,7 @@ skip_marker = "# MCEq"
 long_description = long_description[long_description.index(skip_marker) :].lstrip()
 
 setup(
-    name='MCEq',
+    name='MCEq_TPP',
     version=__version__,
     description='Numerical cascade equation solver',
     long_description=long_description,
